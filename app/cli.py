@@ -10,6 +10,9 @@ cli = typer.Typer()
 
 @cli.command(help="Initialize the database by dropping all existing tables and creating new ones. Adds a default user 'bob' to the database.")
 def initialize():
+    """
+    Function for initializing the database.
+    """
     with get_session() as db: # Get a connection to the database
         drop_all() # delete all tables
         create_db_and_tables() #recreate all tables
@@ -26,8 +29,11 @@ def main(name: Annotated[str, typer.Argument(help="Name to greet", metavar="✨u
     print(f"Hello {name}")
 
 
-@cli.command(help="Retrieve a user by username.")
-def get_user(username: str = typer.Option(..., help="The username to search for")):
+@cli.command()
+def get_user(username: Annotated[str, typer.Argument(help="The username of the user to retrieve")]=None):
+    """
+    function to get user by username
+    """
     with get_session() as db: # Get a connection to the database
         user = db.exec(select(User).where(User.username == username)).first()
         if not user:
@@ -36,8 +42,11 @@ def get_user(username: str = typer.Option(..., help="The username to search for"
         print(user)
     
 
-@cli.command(help="Display all users in the database.")
+@cli.command()
 def get_all_users():
+     """
+     function for get_all_users
+     """
      with get_session() as db:
         all_users = db.exec(select(User)).all()
         if not all_users:
@@ -47,8 +56,12 @@ def get_all_users():
                 print(user)
 
 
-@cli.command(help="Update a user's email address.")
-def change_email(username: str = typer.Option(..., help="The username of the user to update"), new_email: str = typer.Option(..., help="The new email address")):
+@cli.command()
+def change_email(username: Annotated[str, typer.Argument(help="The username of the user to update")]=None,
+                 new_email: Annotated[str, typer.Argument(help="The new email address")]=None):
+    """
+    function to change email of a user
+    """
     with get_session() as db: # Get a connection to the database
         user = db.exec(select(User).where(User.username == username)).first()
         if not user:
@@ -59,8 +72,13 @@ def change_email(username: str = typer.Option(..., help="The username of the use
         db.commit()
         print(f"Updated {user.username}'s email to {user.email}")
 
-@cli.command(help="Create a new user in the database.")
-def create_user(username: str = typer.Option(..., help="The username for the new user"), email: str = typer.Option(..., help="The email address for the new user"), password: str = typer.Option(..., help="The password for the new user")):
+@cli.command()
+def create_user(username: str = typer.Option(..., help="The username of the new user"),
+                email: str = typer.Option(..., help="The email of the new user"),
+                password: str = typer.Option(..., help="The password of the new user")):
+    """
+    Function to create a new user in the database.
+    """
     with get_session() as db: # Get a connection to the database
         newuser = User(username=username, email=email, password=password)
         try:
@@ -73,8 +91,8 @@ def create_user(username: str = typer.Option(..., help="The username for the new
         else:
             print(newuser) # print the newly created user
 
-@cli.command(help="Delete a user from the database by username.")
-def delete_user(username: str = typer.Option(..., help="The username of the user to delete")):
+@cli.command()
+def delete_user(username: Annotated[str, typer.Argument(help="The username of the user to delete")]=None):
     with get_session() as db:
         user = db.exec(select(User).where(User.username == username)).first()
         if not user:
@@ -131,7 +149,8 @@ def get_partial_user(
 
 #exercise 2
 @cli.command()
-def get_user_range(limit: int = 10, offset: int = 0):
+def get_user_range(limit: Annotated[int, typer.Argument(help="Number of users to retrieve")] = 10,
+                   offset: Annotated[int, typer.Argument(help="Number of users to skip")] = 0):
     with get_session() as db:
         users = db.exec(select(User).offset(offset).limit(limit)).all()
         if not users:
